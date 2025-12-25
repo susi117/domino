@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe vs AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #4a6cf7, #7b52d9);
+            color: white;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 15px;
+            font-weight: 400;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .player-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+        }
+        
+        .player-x .player-icon {
+            background-color: #ff4757;
+        }
+        
+        .player-o .player-icon {
+            background-color: #2ed573;
+        }
+        
+        .current-turn {
+            background-color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            color: #4a6cf7;
+            border: 1px solid #e9ecef;
+        }
+        
+        .game-container {
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 10px;
+            margin: 20px 0;
+            background-color: #f1f3f9;
+            padding: 12px;
+            border-radius: 16px;
+        }
+        
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.08);
+            user-select: none;
+        }
+        
+        .cell:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cell.x {
+            color: #ff4757;
+        }
+        
+        .cell.o {
+            color: #2ed573;
+        }
+        
+        .cell.winner {
+            background-color: #ffef9e;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .btn-primary {
+            background-color: #4a6cf7;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3a5ce5;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #f1f3f9;
+            color: #4a6cf7;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #e4e7f1;
+            transform: translateY(-2px);
+        }
+        
+        .game-status {
+            margin-top: 20px;
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            background-color: #f8f9fa;
+            width: 100%;
+            font-weight: 600;
+            font-size: 18px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4a6cf7;
+            border: 1px solid #e9ecef;
+        }
+        
+        .difficulty {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        .difficulty-btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            background-color: #f1f3f9;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+        
+        .difficulty-btn.active {
+            background-color: #4a6cf7;
+            color: white;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #777;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        @media (max-width: 480px) {
+            .cell {
+                width: 80px;
+                height: 80px;
+                font-size: 40px;
+            }
+            
+            .btn {
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-gamepad"></i> Tic-Tac-Toe AI</h1>
+            <p>Bermain melawan kecerdasan buatan</p>
+        </div>
+        
+        <div class="status-bar">
+            <div class="player-info player-x">
+                <div class="player-icon">X</div>
+                <span>Anda (X)</span>
+            </div>
+            
+            <div class="current-turn" id="current-turn">
+                Giliran: Anda (X)
+            </div>
+            
+            <div class="player-info player-o">
+                <div class="player-icon">O</div>
+                <span>AI (O)</span>
+            </div>
+        </div>
+        
+        <div class="game-container">
+            <div class="game-board" id="game-board">
+                <!-- Sel game akan di-generate oleh JavaScript -->
+            </div>
+            
+            <div class="game-status" id="game-status">
+                Klik sel untuk memulai permainan
+            </div>
+            
+            <div class="difficulty">
+                <button class="difficulty-btn active" data-difficulty="easy">Mudah</button>
+                <button class="difficulty-btn" data-difficulty="medium">Sedang</button>
+                <button class="difficulty-btn" data-difficulty="hard">Sulit</button>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-secondary" id="reset-btn">
+                    <i class="fas fa-redo"></i> Mulai Ulang
+                </button>
+                <button class="btn btn-primary" id="hint-btn">
+                    <i class="fas fa-lightbulb"></i> Petunjuk
+                </button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Dibuat dengan HTML5, CSS3, dan JavaScript | AI menggunakan algoritma Minimax
+        </div>
+    </div>
+
+    <script>
+        // Konstanta untuk permainan
+        const PLAYER_X = 'X';
+        const PLAYER_O = 'O';
+        const EMPTY = '';
+        
+        // Variabel game
+        let board = Array(9).fill(EMPTY);
+        let currentPlayer = PLAYER_X;
+        let gameActive = true;
+        let difficulty = 'medium'; // easy, medium, hard
+        
+        // Elemen DOM
+        const gameBoardElement = document.getElementById('game-board');
+        const gameStatusElement = document.getElementById('game-status');
+        const currentTurnElement = document.getElementById('current-turn');
+        const resetButton = document.getElementById('reset-btn');
+        const hintButton = document.getElementById('hint-btn');
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+        
+        // Inisialisasi papan permainan
+        function initializeBoard() {
+            gameBoardElement.innerHTML = '';
+            board.forEach((cell, index) => {
+                const cellElement = document.createElement('div');
+                cellElement.classList.add('cell');
+                cellElement.dataset.index = index;
+                cellElement.addEventListener('click', () => handleCellClick(index));
+                gameBoardElement.appendChild(cellElement);
+            });
+        }
+        
+        // Fungsi untuk menggambar papan
+        function renderBoard() {
+            document.querySelectorAll('.cell').forEach((cell, index) => {
+                cell.textContent = board[index];
+                cell.className = 'cell';
+                if (board[index] === PLAYER_X) cell.classList.add('x');
+                if (board[index] === PLAYER_O) cell.classList.add('o');
+            });
+        }
+        
+        // Fungsi saat sel diklik
+        function handleCellClick(index) {
+            if (board[index] !== EMPTY || !gameActive || currentPlayer !== PLAYER_X) return;
+            
+            // Tempatkan X di papan
+            board[index] = PLAYER_X;
+            renderBoard();
+            
+            // Periksa apakah ada pemenang atau seri
+            if (checkWinner()) {
+                gameStatusElement.textContent = 'Selamat! Anda menang!';
+                gameStatusElement.style.color = '#ff4757';
+                highlightWinningCells();
+                gameActive = false;
+                currentTurnElement.textContent = 'Permainan Selesai';
+                return;
+            }
+            
+            if (isBoardFull()) {
+                gameStatusElement.textContent = 'Permainan seri!';
+                gameStatusElement.style.color = '#ffa502';
+                gameActive = false;
+                currentTurnElement.textContent = 'Permainan Selesai';
+                return;
+            }
+            
+            // Giliran AI
+            currentPlayer = PLAYER_O;
+            updateGameStatus();
+            
+            // AI membuat gerakan setelah jeda singkat
+            setTimeout(() => {
+                if (!gameActive) return;
+                const aiMove = getAIMove();
+                board[aiMove] = PLAYER_O;
+                renderBoard();
+                
+                // Periksa apakah AI menang
+                if (checkWinner()) {
+                    gameStatusElement.textContent = 'AI menang! Coba lagi!';
+                    gameStatusElement.style.color = '#2ed573';
+                    highlightWinningCells();
+                    gameActive = false;
+                    currentTurnElement.textContent = 'Permainan Selesai';
+                    return;
+                }
+                
+                if (isBoardFull()) {
+                    gameStatusElement.textContent = 'Permainan seri!';
+                    gameStatusElement.style.color = '#ffa502';
+                    gameActive = false;
+                    currentTurnElement.textContent = 'Permainan Selesai';
+                    return;
+                }
+                
+                // Giliran pemain kembali
+                currentPlayer = PLAYER_X;
+                updateGameStatus();
+            }, 600);
+        }
+        
+        // Fungsi untuk mendapatkan langkah AI berdasarkan tingkat kesulitan
+        function getAIMove() {
+            if (difficulty === 'easy') {
+                return getRandomMove();
+            } else if (difficulty === 'medium') {
+                // 50% langkah optimal, 50% langkah acak
+                return Math.random() < 0.5 ? getOptimalMove() : getRandomMove();
+            } else {
+                return getOptimalMove();
+            }
+        }
+        
+        // Fungsi untuk mendapatkan langkah acak
+        function getRandomMove() {
+            const emptyCells = board.map((cell, index) => cell === EMPTY ? index : -1).filter(index => index !== -1);
+            return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+        }
+        
+        // Fungsi untuk mendapatkan langkah optimal menggunakan algoritma Minimax
+        function getOptimalMove() {
+            // Jika papan kosong, pilih tengah atau sudut secara acak
+            if (board.every(cell => cell === EMPTY)) {
+                return Math.random() < 0.5 ? 4 : [0, 2, 6, 8][Math.floor(Math.random() * 4)];
+            }
+            
+            let bestScore = -Infinity;
+            let bestMove;
+            
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === EMPTY) {
+                    board[i] = PLAYER_O;
+                    let score = minimax(board, 0, false);
+                    board[i] = EMPTY;
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+            
+            return bestMove;
+        }
+        
+        // Algoritma Minimax untuk AI
+        function minimax(board, depth, isMaximizing) {
+            // Periksa status permainan
+            const winner = checkWinnerForMinimax(board);
+            
+            if (winner === PLAYER_O) return 10 - depth;
+            if (winner === PLAYER_X) return depth - 10;
+            if (isBoardFullForMinimax(board)) return 0;
+            
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === EMPTY) {
+                        board[i] = PLAYER_O;
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = EMPTY;
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === EMPTY) {
+                        board[i] = PLAYER_X;
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = EMPTY;
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+        
+        // Fungsi untuk memeriksa pemenang (untuk Minimax)
+        function checkWinnerForMinimax(currentBoard) {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Baris
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Kolom
+                [0, 4, 8], [2, 4, 6]             // Diagonal
+            ];
+            
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                if (currentBoard[a] && currentBoard[a] === currentBoard[b] && currentBoard[a] === currentBoard[c]) {
+                    return currentBoard[a];
+                }
+            }
+            
+            return null;
+        }
+        
+        // Fungsi untuk memeriksa apakah papan penuh (untuk Minimax)
+        function isBoardFullForMinimax(currentBoard) {
+            return currentBoard.every(cell => cell !== EMPTY);
+        }
+        
+        // Fungsi untuk memeriksa pemenang
+        function checkWinner() {
+            const winningCombinations = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Baris
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Kolom
+                [0, 4, 8], [2, 4, 6]             // Diagonal
+            ];
+            
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return combo;
+                }
+            }
+            
+            return null;
+        }
+        
+        // Fungsi untuk menyorot sel yang menang
+        function highlightWinningCells() {
+            const winningCombo = checkWinner();
+            if (winningCombo) {
+                winningCombo.forEach(index => {
+                    document.querySelector(`.cell[data-index="${index}"]`).classList.add('winner');
+                });
+            }
+        }
+        
+        // Fungsi untuk memeriksa apakah papan penuh
+        function isBoardFull() {
+            return board.every(cell => cell !== EMPTY);
+        }
+        
+        // Fungsi untuk memperbarui status permainan
+        function updateGameStatus() {
+            if (currentPlayer === PLAYER_X) {
+                gameStatusElement.textContent = 'Giliran Anda (X)';
+                gameStatusElement.style.color = '#ff4757';
+                currentTurnElement.textContent = 'Giliran: Anda (X)';
+            } else {
+                gameStatusElement.textContent = 'Giliran AI (O)';
+                gameStatusElement.style.color = '#2ed573';
+                currentTurnElement.textContent = 'Giliran: AI (O)';
+            }
+        }
+        
+        // Fungsi untuk memberikan petunjuk
+        function giveHint() {
+            if (!gameActive || currentPlayer !== PLAYER_X) return;
+            
+            // Cari langkah terbaik untuk pemain
+            let bestScore = -Infinity;
+            let bestMove;
+            
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === EMPTY) {
+                    board[i] = PLAYER_X;
+                    let score = minimax(board, 0, false);
+                    board[i] = EMPTY;
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+            
+            // Sorot sel petunjuk
+            const hintCell = document.querySelector(`.cell[data-index="${bestMove}"]`);
+            hintCell.style.backgroundColor = '#ffef9e';
+            hintCell.style.boxShadow = '0 0 0 3px #ffa502';
+            
+            // Hapus sorotan setelah 1.5 detik
+            setTimeout(() => {
+                hintCell.style.backgroundColor = '';
+                hintCell.style.boxShadow = '';
+            }, 1500);
+            
+            gameStatusElement.textContent = `Coba tempatkan X di kotak ${bestMove +  1}`;
+            gameStatusElement.style.color = '#ffa502';
+        }
+        
+        // Fungsi untuk mengatur ulang permainan
+        function resetGame() {
+            board = Array(9).fill(EMPTY);
+            currentPlayer = PLAYER_X;
+            gameActive = true;
+            renderBoard();
+            updateGameStatus();
+            gameStatusElement.textContent = 'Klik sel untuk memulai permainan';
+            gameStatusElement.style.color = '#4a6cf7';
+        }
+        
+        // Fungsi untuk mengatur tingkat kesulitan
+        function setDifficulty(level) {
+            difficulty = level;
+            difficultyButtons.forEach(btn => {
+                if (btn.dataset.difficulty === level) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            resetGame();
+        }
+        
+        // Event Listeners
+        resetButton.addEventListener('click', resetGame);
+        hintButton.addEventListener('click', giveHint);
+        
+        difficultyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                setDifficulty(button.dataset.difficulty);
+            });
+        });
+        
+        // Inisialisasi permainan
+        initializeBoard();
+        renderBoard();
+        updateGameStatus();
+    </script>
+</body>
+</html>
